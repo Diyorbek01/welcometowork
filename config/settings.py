@@ -88,9 +88,9 @@ TEMPLATES = [
 ]
 
 PAYME_SETTINGS = {
-    'DEBUG': True,  # True - test mode, False - production mode
-    'ID': '',
-    'SECRET_KEY': '',
+    'DEBUG': False,  # True - test mode, False - production mode
+    'ID': '63284277f8b15ea8112b3643',
+    'SECRET_KEY': '2EzbOXaJr1NTOVS@f?Ffj2Z09HYDGzSdMd#k',
     'ACCOUNTS': {
         'KEY_1': 'order_id',
         'KEY_2': '',
@@ -105,9 +105,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'upwork',
-        'USER': 'newupworkuser',
-        'PASSWORD': 'password',
+        'NAME': 'welcometowork',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '',
     }

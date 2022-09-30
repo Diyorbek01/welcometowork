@@ -35,8 +35,8 @@ class ProposalViewset(viewsets.ModelViewSet):
                     amount=int(config('PRICE'))
                 )
                 return Response(serializer.data, status=HTTP_201_CREATED)
-            return Response({'message': "Hisobingizda mablag' yetarli emas"})
-        return Response(serializer.errors)
+            return Response({'message': "Hisobingizda mablag' yetarli emas"}, status=HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @action(methods=['get'], detail=False)
     def get_list(self, request):

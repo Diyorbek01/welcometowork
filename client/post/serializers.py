@@ -186,10 +186,11 @@ class PostClientGetSerializer(serializers.ModelSerializer):
     proposals = serializers.SerializerMethodField()
     passed_date = serializers.SerializerMethodField()
     reviews = serializers.SerializerMethodField()
+    is_applied = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        exclude = ('is_new','is_delete','is_active','extra_skills')
+        exclude = ('is_new', 'is_delete', 'is_active', 'extra_skills')
 
     def get_skills(self, obj):
         skills = obj.skills.all()
@@ -201,18 +202,12 @@ class PostClientGetSerializer(serializers.ModelSerializer):
         serializer = ReviewGetSerializer(reviews, many=True)
         return serializer.data
 
-
-#    def get_client_status(self, obj):
-#        user_id = self.context['user_id']
-#        proposals = Proposal.objects.filter(user_id=user_id, post_id=obj.id)
-#        if proposals:
-#            status = {
-#                "client_status": proposals.last().client_status,
-#                "admin_status": proposals.last().admin_status,
-#            }
-#            return status
-#        else:
-#           return None
+    def get_is_applied(self, obj):
+        user_id = self.context['user_id']
+        proposals = Proposal.objects.filter(user_id=user_id, post_id=obj.id)
+        if proposals:
+            return True
+        return False
 
     def get_passed_date(self, obj):
         create_date = now() - obj.created_at
