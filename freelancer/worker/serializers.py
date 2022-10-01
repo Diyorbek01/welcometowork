@@ -34,7 +34,7 @@ class WorkerGetPopularSerializer(serializers.ModelSerializer):
         if result['avarage']:
             return round(result['avarage'], 1)
         else:
-            return 0
+            return 0.0
 
     def get_region(self, obj):
         if obj.region:
