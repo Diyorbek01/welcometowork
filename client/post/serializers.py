@@ -114,7 +114,7 @@ class PostGetSerializer(serializers.ModelSerializer):
         if result['avarage']:
             return round(result['avarage'], 1)
         else:
-            return 0
+            return 0.0
 
     def get_client_status(self, obj):
         user_id = self.context['user_id']

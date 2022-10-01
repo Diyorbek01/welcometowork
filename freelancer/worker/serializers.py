@@ -57,7 +57,7 @@ class WorkerGetProposalSerializer(serializers.ModelSerializer):
         if result['avarage']:
             return round(result['avarage'], 1)
         else:
-            return 0
+            return 0.0
 
     def get_reviews(self, obj):
         reviews = Review.objects.filter(user_id=obj.id, is_client=True)
@@ -90,7 +90,7 @@ class WorkerGetSerializer(serializers.ModelSerializer):
         if result['avarage']:
             return round(result['avarage'], 1)
         else:
-            return 0
+            return 0.0
 
     def get_skills(self, obj):
         skills_list = obj.skills.all()
