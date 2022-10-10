@@ -128,7 +128,7 @@ class ProposalViewset(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False)
     def get_post(self, request):
-       # status = request.GET.get("status")
+        # status = request.GET.get("status")
         user_id = request.user.id
         proposals = Proposal.objects.all()
         serializer = ProposalPostSerializer(proposals, many=True)
@@ -173,3 +173,30 @@ class InvoiceViewset(viewsets.ModelViewSet):
         invoices = Invoice.objects.all()
         serializer = InvoiceGetSerializer(invoices, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
+
+    @action(methods=['get'], detail=False)
+    def filter_by_date(self, request):
+        start_date = request.GET.get('start_date', None)
+        finish_date = request.GET.get('finish_date', None)
+        min_summa = request.GET.get('min_summa', None)
+        max_summa = request.GET.get('max_summa', None)
+        if min_summa and max_summa:
+            invoices = Invoice.objects.filter(amount__gte=min_summa, amount__lte=max_summa)
+            if start_date and finish_date:
+                new_invoices = invoices.filter(created_at__gt=start_date,
+                                               created_at__lte=finish_date)
+                serializer = InvoiceGetSerializer(new_invoices, many=True)
+                return Response(serializer.data, status=HTTP_200_OK)
+            serializer = InvoiceGetSerializer(invoices, many=True)
+            return Response(serializer.data, status=HTTP_200_OK)
+
+        elif start_date and finish_date:
+            invoices = Invoice.objects.filter(created_at__gt=start_date,
+                                              created_at__lte=finish_date)
+            serializer = InvoiceGetSerializer(invoices, many=True)
+            return Response(serializer.data, status=HTTP_200_OK)
+        else:
+            invoices = Invoice.objects.all()
+            serializer = InvoiceGetSerializer(invoices, many=True)
+            return Response(serializer.data, status=HTTP_200_OK)
+

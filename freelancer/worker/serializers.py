@@ -125,7 +125,7 @@ class InvoiceGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice
-        fields = ["id", 'user','created_at','amount']
+        fields = ["id", 'user', 'created_at', 'amount', 'is_withdraw']
 
     def get_user(self, obj):
         user = obj.user

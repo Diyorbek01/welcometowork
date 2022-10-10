@@ -100,25 +100,17 @@ class PostViewset(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        images = request.FILES.getlist("image")
-        for image in images:
-            data =dict(
-                image=image,
-                post=serializer.data.get("id")
-            )
-            ser = PostImagePostSerializer(data=data)
-            if ser.is_valid():
-                ser.save()
-
-                print(ser.data)
-            print(ser.errors)
-            # data_ = ContentFile(base64.b64decode(image), name='image_name.jpg')
-            # image_instance = PostImage.objects.create(
-            #     image=data_,
-            #     post_id=2
-            # )
-        return Response(serializer.data, status=HTTP_201_CREATED)
-        # return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            images = request.FILES.getlist("image")
+            for image in images:
+                data =dict(
+                    image=image,
+                    post=serializer.data.get("id")
+                )
+                ser = PostImagePostSerializer(data=data)
+                if ser.is_valid():
+                    ser.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @action(methods=['get'], detail=False)
     def change_status(self, request):
