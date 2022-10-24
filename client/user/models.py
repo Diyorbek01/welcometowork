@@ -17,6 +17,7 @@ class User(AbstractUser):
     experience = models.IntegerField(null=True, blank=True)
     overview = models.TextField(null=True, blank=True)
     payment_hourly = models.FloatField(null=True, blank=True)
+    token = models.CharField(max_length=200,null=True, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     skills = models.ManyToManyField(SubCategory, blank=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, null=True, blank=True)

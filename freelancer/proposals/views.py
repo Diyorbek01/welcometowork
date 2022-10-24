@@ -5,11 +5,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
+import messages
 from client.user.serializers import ProposalUserDetailsSerializer
 from freelancer.proposals.models import Proposal, Review, Invoice, StatusChanges
 from freelancer.proposals.serializers import ProposalSerializer, ProposalGetSerializer, \
     ReviewSerializer, ReviewGetSerializer, ProposalPostSerializer, InvoiceSerializer, ProposalGetDetailsSerializer
 from freelancer.worker.serializers import InvoiceGetSerializer
+from pusher import send_message
 
 
 class ProposalViewset(viewsets.ModelViewSet):
@@ -84,29 +86,42 @@ class ProposalViewset(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False)
     def change_status(self, request):
+        # For admin
         proposal_id = request.GET.get("proposal_id", None)
         status = request.GET.get("status", None)
 
         proposal = Proposal.objects.get(id=proposal_id)
-        proposal.admin_status = status
-        proposal.save()
-        proposal.post.user.balance -= int(config('PRICE'))
-        if proposal.post.user.balance > 0:
-            proposal.post.user.total_spent += int(config('PRICE'))
-            proposal.post.user.save()
-            invoice = Invoice.objects.create(
-                user_id=proposal.post.user.id,
-                is_withdraw=True,
-                amount=int(config('PRICE'))
-            )
-            status_changes = StatusChanges.objects.create(
-                user=request.user,
-                from_status=proposal.admin_status,
-                to_status=status,
-                proposal=proposal
-            )
+        if status == 'approved':
+            proposal.post.user.balance -= int(config('PRICE'))
+            if proposal.post.user.balance > 0:
+                proposal.post.user.total_spent += int(config('PRICE'))
+                proposal.post.user.save()
+                proposal.admin_status = status
+                proposal.save()
+                # Send message
+                send_message(proposal.user.token, messages.data['proposal_title'], messages.data['confirm_proposal_admin'])
+
+                invoice = Invoice.objects.create(
+                    user_id=proposal.post.user.id,
+                    is_withdraw=True,
+                    amount=int(config('PRICE'))
+                )
+                status_changes = StatusChanges.objects.create(
+                    user=request.user,
+                    from_status=proposal.admin_status,
+                    to_status=status,
+                    proposal=proposal
+                )
+                return Response("Changed", status=HTTP_200_OK)
+            return Response({"message": "Foydalanuvchi hisobida mablag' yetarli emas!"}, status=HTTP_400_BAD_REQUEST)
+
+        else:
+            if status == "cancelled":
+                send_message(proposal.user.token, messages.data['proposal_title'], messages.data['cancelled_proposal'])
+
+            proposal.admin_status = status
+            proposal.save()
             return Response("Changed", status=HTTP_200_OK)
-        return Response({"message": "Foydalanuvchi hisobida mablag' yetarli emas!"}, status=HTTP_400_BAD_REQUEST)
 
     @action(methods=['get'], detail=False)
     def change_client_status(self, request):
@@ -123,6 +138,10 @@ class ProposalViewset(viewsets.ModelViewSet):
         proposal.client_status = status
         proposal.post.user.save()
         proposal.save()
+        if status == "approved":
+            send_message(proposal.user.token, messages.data['proposal_title'], messages.data['confirm_proposal_client'])
+        elif status == "cancelled":
+            send_message(proposal.user.token, messages.data['proposal_title'], messages.data['cancelled_proposal'])
 
         return Response("Changed", status=HTTP_200_OK)
 
