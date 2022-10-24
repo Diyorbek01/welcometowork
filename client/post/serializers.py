@@ -240,12 +240,14 @@ class PostClientGetSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         if obj.user.avatar:
             data = {
+                "id": obj.user.id,
                 "full_name": obj.user.get_full_name(),
                 "is_online": obj.user.is_online,
                 "avatar": obj.user.avatar.url
             }
         else:
             data = {
+                "id": obj.user.id,
                 "full_name": obj.user.get_full_name(),
                 "is_online": obj.user.is_online,
                 "avatar": None
