@@ -13,7 +13,7 @@ from client.post.models import Post, PostImage, Wishlist, Timer
 from client.post.serializers import PostImageSerializer, PostGetLessSerializer, \
     PostMenuSerializer, WishListSerializer, PostFinishedSerializer, PostFinishedClientSerializer, \
     PostClientGetSerializer, TimerSerializer, TimerGetSerializer, PostImagePostSerializer, PostSerializer
-from freelancer.proposals.models import Proposal, StatusChanges, Review
+from freelancer.proposals.models import Proposal, StatusChanges, Review, Notification
 from pusher import send_message
 
 
@@ -132,6 +132,12 @@ class PostViewset(viewsets.ModelViewSet):
                 request.user.total_earnings += post.maximum_project_budget
                 request.user.save()
                 send_message(post.user.token, messages.data['post_title'], messages.data['finished_post'])
+                Notification.objects.create(
+                    user=post.user,
+                    proposal=proposal,
+                    title=messages.data['post_title'],
+                    body=messages.data['finished_post'],
+                )
             status_changes = StatusChanges.objects.create(
                 user=request.user,
                 from_status=post.status,
@@ -144,11 +150,29 @@ class PostViewset(viewsets.ModelViewSet):
                 post.user.balance += int(config['POST_PRICE'])
                 post.user.save()
                 send_message(post.user.token, messages.data['post_title'], messages.data['cancelled_post'])
+                Notification.objects.create(
+                    user=post.user,
+                    proposal=proposal,
+                    title=messages.data['post_title'],
+                    body=messages.data['cancelled_post'],
+                )
+
             elif status == 'approved':
                 send_message(post.user.token, messages.data['post_title'], messages.data['confirm_post'])
+                Notification.objects.create(
+                    user=post.user,
+                    proposal=proposal,
+                    title=messages.data['post_title'],
+                    body=messages.data['confirm_post'],
+                )
             elif status == 'going':
                 send_message(post.user.token, messages.data['post_title'], messages.data['going_post'])
-
+                Notification.objects.create(
+                    user=post.user,
+                    proposal=proposal,
+                    title=messages.data['post_title'],
+                    body=messages.data['going_post'],
+                )
 
             return Response("Changed", status=HTTP_200_OK)
         return Response("Post not found", status=HTTP_400_BAD_REQUEST)

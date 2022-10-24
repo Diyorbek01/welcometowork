@@ -7,7 +7,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_RE
 
 import messages
 from client.user.serializers import ProposalUserDetailsSerializer
-from freelancer.proposals.models import Proposal, Review, Invoice, StatusChanges
+from freelancer.proposals.models import Proposal, Review, Invoice, StatusChanges, Notification
 from freelancer.proposals.serializers import ProposalSerializer, ProposalGetSerializer, \
     ReviewSerializer, ReviewGetSerializer, ProposalPostSerializer, InvoiceSerializer, ProposalGetDetailsSerializer
 from freelancer.worker.serializers import InvoiceGetSerializer
@@ -99,7 +99,14 @@ class ProposalViewset(viewsets.ModelViewSet):
                 proposal.admin_status = status
                 proposal.save()
                 # Send message
-                send_message(proposal.user.token, messages.data['proposal_title'], messages.data['confirm_proposal_admin'])
+                send_message(proposal.user.token, messages.data['proposal_title'],
+                             messages.data['confirm_proposal_admin'])
+                Notification.objects.create(
+                    user=proposal.user,
+                    proposal=proposal,
+                    title=messages.data['proposal_title'],
+                    body=messages.data['confirm_proposal_admin'],
+                )
 
                 invoice = Invoice.objects.create(
                     user_id=proposal.post.user.id,
@@ -118,7 +125,12 @@ class ProposalViewset(viewsets.ModelViewSet):
         else:
             if status == "cancelled":
                 send_message(proposal.user.token, messages.data['proposal_title'], messages.data['cancelled_proposal'])
-
+                Notification.objects.create(
+                    user=proposal.user,
+                    proposal=proposal,
+                    title=messages.data['proposal_title'],
+                    body=messages.data['cancelled_proposal'],
+                )
             proposal.admin_status = status
             proposal.save()
             return Response("Changed", status=HTTP_200_OK)
@@ -140,8 +152,20 @@ class ProposalViewset(viewsets.ModelViewSet):
         proposal.save()
         if status == "approved":
             send_message(proposal.user.token, messages.data['proposal_title'], messages.data['confirm_proposal_client'])
+            Notification.objects.create(
+                user=proposal.user,
+                proposal=proposal,
+                title=messages.data['proposal_title'],
+                body=messages.data['confirm_proposal_client'],
+            )
         elif status == "cancelled":
             send_message(proposal.user.token, messages.data['proposal_title'], messages.data['cancelled_proposal'])
+            Notification.objects.create(
+                user=proposal.user,
+                proposal=proposal,
+                title=messages.data['proposal_title'],
+                body=messages.data['cancelled_proposal'],
+            )
 
         return Response("Changed", status=HTTP_200_OK)
 
@@ -218,4 +242,3 @@ class InvoiceViewset(viewsets.ModelViewSet):
             invoices = Invoice.objects.all()
             serializer = InvoiceGetSerializer(invoices, many=True)
             return Response(serializer.data, status=HTTP_200_OK)
-

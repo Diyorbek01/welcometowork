@@ -101,7 +101,7 @@ class PostMenuSerializer(serializers.ModelSerializer):
         if obj.is_hourly:
             return f"{obj.hourly_from_budget}-{obj.hourly_to_budget}"
         else:
-            return obj.maximum_project_budget
+            return str(obj.maximum_project_budget)
 
     def get_image(self, obj):
         images = PostImage.objects.filter(post_id=obj.id).first()

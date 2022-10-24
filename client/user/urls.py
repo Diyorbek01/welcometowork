@@ -7,3 +7,4 @@ from .views import *
 router = DefaultRouter()
 
 router.register('client', UserViewset, basename='UserViewSet')
+router.register('notification-mobile', NotificationMobile, basename='NotificationMobile')

@@ -61,3 +61,14 @@ class StatusChanges(models.Model):
 
     def __str__(self):
         return f"{self.from_status}->{self.to_status} | {self.user.get_full_name()}"
+
+class Notification(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, null=True, blank=True)
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    is_new = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title

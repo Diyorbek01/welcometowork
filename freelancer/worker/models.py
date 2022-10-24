@@ -27,3 +27,6 @@ class PortfolioImage(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='portfolio')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+
+
+
