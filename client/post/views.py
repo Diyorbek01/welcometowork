@@ -1,5 +1,6 @@
 import base64
 
+from decouple import config
 from django.core.files.base import ContentFile
 # Create your views here.
 from rest_framework import viewsets, authentication, permissions
@@ -7,11 +8,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 
+import messages
 from client.post.models import Post, PostImage, Wishlist, Timer
 from client.post.serializers import PostImageSerializer, PostGetLessSerializer, \
     PostMenuSerializer, WishListSerializer, PostFinishedSerializer, PostFinishedClientSerializer, \
     PostClientGetSerializer, TimerSerializer, TimerGetSerializer, PostImagePostSerializer, PostSerializer
 from freelancer.proposals.models import Proposal, StatusChanges, Review
+from pusher import send_message
 
 
 class PostViewset(viewsets.ModelViewSet):
@@ -95,30 +98,27 @@ class PostViewset(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False)
     def create_post(self, request):
-        data = request.data
-        serializer = PostSerializer(data=data)
-        if serializer.is_valid():
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-        images = request.FILES.getlist("image")
-        for image in images:
-            data =dict(
-                image=image,
-                post=serializer.data.get("id")
-            )
-            ser = PostImagePostSerializer(data=data)
-            if ser.is_valid():
-                ser.save()
-
-                print(ser.data)
-            print(ser.errors)
-            # data_ = ContentFile(base64.b64decode(image), name='image_name.jpg')
-            # image_instance = PostImage.objects.create(
-            #     image=data_,
-            #     post_id=2
-            # )
-        return Response(serializer.data, status=HTTP_201_CREATED)
-        # return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        price = int(config('POST_PRICE'))
+        balance = request.user.balance
+        if (balance - price) > 0:
+            data = request.data
+            serializer = PostSerializer(data=data)
+            if serializer.is_valid():
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                images = request.FILES.getlist("image")
+                for image in images:
+                    data = dict(
+                        image=image,
+                        post=serializer.data.get("id")
+                    )
+                    ser = PostImagePostSerializer(data=data)
+                    if ser.is_valid():
+                        ser.save()
+                return Response(serializer.data, status=HTTP_201_CREATED)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Hisobingizda mablag' yetarli emas!"}, status=402)
 
     @action(methods=['get'], detail=False)
     def change_status(self, request):
@@ -131,6 +131,7 @@ class PostViewset(viewsets.ModelViewSet):
             if status == "finished" and post.is_hourly == False:
                 request.user.total_earnings += post.maximum_project_budget
                 request.user.save()
+                send_message(post.user.token, messages.data['post_title'], messages.data['finished_post'])
             status_changes = StatusChanges.objects.create(
                 user=request.user,
                 from_status=post.status,
@@ -139,6 +140,15 @@ class PostViewset(viewsets.ModelViewSet):
             )
             post.status = status
             post.save()
+            if status == "canceled":
+                post.user.balance += int(config['POST_PRICE'])
+                post.user.save()
+                send_message(post.user.token, messages.data['post_title'], messages.data['cancelled_post'])
+            elif status == 'approved':
+                send_message(post.user.token, messages.data['post_title'], messages.data['confirm_post'])
+            elif status == 'going':
+                send_message(post.user.token, messages.data['post_title'], messages.data['going_post'])
+
 
             return Response("Changed", status=HTTP_200_OK)
         return Response("Post not found", status=HTTP_400_BAD_REQUEST)

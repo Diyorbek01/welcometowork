@@ -13,7 +13,7 @@ class Proposal(BaseModel):
         ("approved", "approved"),
         ("cancelled", "cancelled"),
     )
-    WORKER_STATUS = (
+    CLIENT_STATUS = (
         ("pending", "pending"),
         ("approved", "approved"),
         ("cancelled", "cancelled"),
@@ -25,7 +25,7 @@ class Proposal(BaseModel):
     price = models.BigIntegerField()
     is_new = models.BooleanField(default=True)
     admin_status = models.CharField(max_length=25, choices=ADMIN_STATUS, default='pending')
-    client_status = models.CharField(max_length=25, choices=WORKER_STATUS, default='pending')
+    client_status = models.CharField(max_length=25, choices=CLIENT_STATUS, default='pending')
 
     def __str__(self):
         return f"{self.user.get_full_name()} | {self.post.headline}"

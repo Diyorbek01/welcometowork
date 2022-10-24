@@ -54,8 +54,10 @@ def random_string(digit_count):
 def login(request):
     username = request.data["username"]
     password = request.data["password"]
+
     if User.objects.filter(username=username, password=password).exists():
         user = User.objects.get(username=username)
+        print(user)
         token, created = Token.objects.get_or_create(user=user)
         data = dict(
             user_id=user.id,
@@ -75,9 +77,15 @@ def login_admin(request):
         user = User.objects.get(username=username)
         token, created = Token.objects.get_or_create(user=user)
         data = dict(
-            user_id=user.id,
+            user={
+                "id": user.id,
+                "full_name": user.get_full_name(),
+                "avatar": None
+            },
             token=token.key,
         )
+        if user.avatar:
+            data['user']['avatar'] = user.avatar.url
         return Response(data, status=200)
     else:
         return Response({"message": "User doesn't exist"}, status=400)

@@ -137,7 +137,7 @@ class ProposalGetUserSerializer(serializers.ModelSerializer):
 
 class ProposalUserDetailsSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
-    # created_at = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -147,5 +147,6 @@ class ProposalUserDetailsSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         serializer = UserProposalGetSerializer(obj.user)
         return serializer.data
-    # def get_created_at(self, obj):
-    #     return obj.created_at
+
+    def get_created_at(self, obj):
+        return obj.created_at
