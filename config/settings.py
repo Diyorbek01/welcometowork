@@ -105,9 +105,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'upwork',
-        'USER': 'newupworkuser',
-        'PASSWORD': 'password',
+        'NAME': 'welcometowork',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '',
     }

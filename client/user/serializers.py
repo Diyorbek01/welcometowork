@@ -2,7 +2,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from client.user.models import User
-from freelancer.proposals.models import Review, Proposal
+from freelancer.proposals.models import Review, Proposal, Notification
 from freelancer.proposals.serializers import ReviewGetSerializer
 from freelancer.worker.models import Portfolio
 from freelancer.worker.serializers import PortfolioSerializer
@@ -150,3 +150,26 @@ class ProposalUserDetailsSerializer(serializers.ModelSerializer):
 
     def get_created_at(self, obj):
         return obj.created_at
+
+class NotificationMobileSerializer(serializers.ModelSerializer):
+    user = UserGetSerializer(read_only=True)
+    post = serializers.SerializerMethodField()
+    proposal = serializers.SerializerMethodField()
+    class Meta:
+        model=Notification
+        fields = "__all__"
+
+    def get_post(self,obj):
+        if obj.post:
+            return dict(
+                id=obj.post.id,
+                headline=obj.post.headline,
+            )
+        return None
+    def get_proposal(self,obj):
+        if obj.proposal:
+            return dict(
+                id=obj.proposal.id,
+                headline=obj.proposal.description,
+            )
+        return None
