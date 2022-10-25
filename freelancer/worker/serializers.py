@@ -65,7 +65,7 @@ class WorkerGetProposalSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_portfolio(self, obj):
-        portfolios = Portfolio.objects.filter(user_id=obj.id)
+        portfolios = Portfolio.objects.filter(user_id=obj.id, status='approved')
         serializer = PortfolioSerializer(portfolios, many=True)
         return serializer.data
 
