@@ -41,6 +41,7 @@ urlpatterns = [
     path("api/v1/auth/login_admin/", auth.login_admin),
     path("api/v1/auth/send_otp/", auth.send_sms_register),
     path("api/v1/auth/check_otp/", auth.chek_otp),
+    path("api/v1/auth/check_otp_for_reset/", auth.check_otp_for_reset),
     path("api/v1/auth/phone_number_reset_password/", auth.send_reset_password),
     path("api/v1/auth/reset_password/", auth.reset_password),
     path("api/v1/auth/create_password/", auth.create_password),

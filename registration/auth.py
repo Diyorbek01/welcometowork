@@ -115,6 +115,25 @@ def chek_otp(request):
 
 
 @api_view(['POST'])
+def check_otp_for_reset(request):
+    code = request.data['code']
+    token = UserToken.objects.all().last().token
+    phone_number = UserToken.objects.all().last().phone_number
+    if code == token:
+        user, created = User.objects.get_or_create(
+            phone_number=phone_number,
+            username=phone_number,
+        )
+        token_, create = Token.objects.get_or_create(user=user)
+        return Response({
+            "message:": "Success",
+            "user_id": user.id,
+            "token": token_.key,
+        }, status=HTTP_200_OK)
+    else:
+        return Response({"message:": "Invalid sms code"}, status=HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
 def create_password(request):
     user_id = request.data['user_id']
     password = request.data['password']
