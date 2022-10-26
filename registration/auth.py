@@ -54,10 +54,13 @@ def random_string(digit_count):
 def login(request):
     username = request.data["username"]
     password = request.data["password"]
+    token_mobile = request.data.get("token", None)
 
     if User.objects.filter(username=username, password=password).exists():
         user = User.objects.get(username=username)
-        print(user)
+        if token_mobile:
+            user.token = token_mobile
+            user.save()
         token, created = Token.objects.get_or_create(user=user)
         data = dict(
             user_id=user.id,
@@ -132,6 +135,7 @@ def check_otp_for_reset(request):
         }, status=HTTP_200_OK)
     else:
         return Response({"message:": "Invalid sms code"}, status=HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def create_password(request):

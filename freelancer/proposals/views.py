@@ -2,10 +2,12 @@
 from decouple import config
 from rest_framework import viewsets, authentication, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 import messages
+from client.post.models import Post
 from client.user.serializers import ProposalUserDetailsSerializer
 from freelancer.proposals.models import Proposal, Review, Invoice, StatusChanges, Notification
 from freelancer.proposals.serializers import ProposalSerializer, ProposalGetSerializer, \
@@ -26,6 +28,14 @@ class ProposalViewset(viewsets.ModelViewSet):
         serializer = ProposalSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            post = Post.objects.get(id=data.get('post'))
+            send_message(post.user.token, messages.data['proposal_title'], messages.data['create_proposal'])
+            Notification.objects.create(
+                user=post.user,
+                proposal=Proposal.objects.last(),
+                title=messages.data['proposal_title'],
+                body=messages.data['create_proposal'],
+            )
             user = request.user
             user.balance -= int(config('PRICE'))
             if user.balance > 0:

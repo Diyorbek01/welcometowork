@@ -7,6 +7,7 @@ data = {
     "cancelled_post": "Sizning postingiz rad etildi",
 
     "proposal_title": "Taklif uchun xabar",
+    "create_proposal": "Sizning postingiz uchun taklif tushdi",
     "confirm_proposal_admin": "Sizning taklifingiz admin tasdiqladi",
     "confirm_proposal_client": "Sizning taklifingiz qabul qilindi",
     "cancelled_proposal": "Sizning taklifingiz rad etildi",

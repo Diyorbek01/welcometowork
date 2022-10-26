@@ -4,7 +4,7 @@ from rest_framework import viewsets, authentication, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from client.user.serializers import UserSerializer, UserGetSerializer, UserPostSerializer, UserProfileUpdateSerializer, \
     NotificationMobileSerializer
@@ -53,6 +53,18 @@ class UserViewset(viewsets.ModelViewSet):
         user.balance += price
         user.save()
         return Response({"message": "Accepted successfully"}, status=HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def change_phone_number(self, request):
+        user = request.user
+        phone_number = request.data.get("phone_number",None)
+        try:
+            user.phone_number=phone_number
+            user.username=phone_number
+            user.save()
+            return Response({"message":"Changed"}, status=HTTP_200_OK)
+        except:
+            return Response({"error":"This phone number already exists"}, status=HTTP_400_BAD_REQUEST)
 
 
 class NotificationMobile(viewsets.ModelViewSet):
