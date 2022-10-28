@@ -146,6 +146,8 @@ class PostViewset(viewsets.ModelViewSet):
             )
             post.status = status
             post.save()
+            proposal.last().client_status = status
+            proposal.last().save()
             if status == "canceled":
                 post.user.balance += int(config['POST_PRICE'])
                 post.user.save()
@@ -196,6 +198,8 @@ class PostViewset(viewsets.ModelViewSet):
                 )
                 post.status = status
                 post.save()
+                proposal.last().client_status = status
+                proposal.last().save()
             return Response("Changed", status=HTTP_200_OK)
         return Response("Post not found", status=HTTP_400_BAD_REQUEST)
 

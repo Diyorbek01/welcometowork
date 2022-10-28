@@ -16,6 +16,8 @@ class Proposal(BaseModel):
     CLIENT_STATUS = (
         ("pending", "pending"),
         ("approved", "approved"),
+        ("going", "going"),
+        ("finished", "finished"),
         ("cancelled", "cancelled"),
         ("archived", "archived"),
     )
