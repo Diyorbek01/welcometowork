@@ -134,7 +134,7 @@ class PostViewset(viewsets.ModelViewSet):
                 send_message(post.user.token, messages.data['post_title'], messages.data['finished_post'])
                 Notification.objects.create(
                     user=post.user,
-                    proposal=proposal,
+                    proposal=proposal.last(),
                     title=messages.data['post_title'],
                     body=messages.data['finished_post'],
                 )
@@ -152,7 +152,7 @@ class PostViewset(viewsets.ModelViewSet):
                 send_message(post.user.token, messages.data['post_title'], messages.data['cancelled_post'])
                 Notification.objects.create(
                     user=post.user,
-                    proposal=proposal,
+                    proposal=proposal.last(),
                     title=messages.data['post_title'],
                     body=messages.data['cancelled_post'],
                 )
@@ -161,7 +161,7 @@ class PostViewset(viewsets.ModelViewSet):
                 send_message(post.user.token, messages.data['post_title'], messages.data['confirm_post'])
                 Notification.objects.create(
                     user=post.user,
-                    proposal=proposal,
+                    proposal=proposal.last(),
                     title=messages.data['post_title'],
                     body=messages.data['confirm_post'],
                 )
@@ -169,7 +169,7 @@ class PostViewset(viewsets.ModelViewSet):
                 send_message(post.user.token, messages.data['post_title'], messages.data['going_post'])
                 Notification.objects.create(
                     user=post.user,
-                    proposal=proposal,
+                    proposal=proposal.last(),
                     title=messages.data['post_title'],
                     body=messages.data['going_post'],
                 )
