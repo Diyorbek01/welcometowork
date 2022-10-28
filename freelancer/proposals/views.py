@@ -158,6 +158,7 @@ class ProposalViewset(viewsets.ModelViewSet):
             proposal=proposal
         )
         proposal.client_status = status
+        proposal.post_status = status
         proposal.post.user.save()
         proposal.save()
         if status == "approved":

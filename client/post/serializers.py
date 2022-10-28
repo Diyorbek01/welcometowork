@@ -123,6 +123,7 @@ class PostGetSerializer(serializers.ModelSerializer):
             status = {
                 "client_status": proposals.last().client_status,
                 "admin_status": proposals.last().admin_status,
+                "post_status": proposals.last().post_status,
             }
             return status
         else:

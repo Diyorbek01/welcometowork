@@ -116,7 +116,7 @@ class ProposalPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
         # fields = "__all__"
-        fields = ['id', "admin_status", "client_status", "posts"]
+        fields = ['id', "admin_status", "client_status","post_status", "posts"]
 
     def get_posts(self, obj):
         serializer = PostMenuSerializer(obj.post)
@@ -133,7 +133,7 @@ class ProposalGetDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
         fields = ['id', "post_title", "user", "price", "address", "post_price", "client_name", "description",
-                  'created_at', "admin_status", "client_status"]
+                  'created_at', "admin_status", "client_status", "post_status"]
 
     def get_user(self, obj):
         if obj.user.avatar:
