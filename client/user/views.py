@@ -87,6 +87,6 @@ class NotificationMobile(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False)
     def get(self, request):
         user_id = request.user.id
-        notifications = Notification.objects.filter(user=user_id, is_new=True)
+        notifications = Notification.objects.filter(user=user_id, is_new=True).order_by("-created_at")
         serializer = self.get_serializer_class()(notifications, many=True)
         return Response(serializer.data)
