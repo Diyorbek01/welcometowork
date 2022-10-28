@@ -156,7 +156,14 @@ class PostViewset(viewsets.ModelViewSet):
                     title=messages.data['post_title'],
                     body=messages.data['cancelled_post'],
                 )
-
+                status_changes = StatusChanges.objects.create(
+                    user=request.user,
+                    from_status=post.status,
+                    to_status=status,
+                    post=post
+                )
+                post.status = status
+                post.save()
             elif status == 'approved':
                 send_message(post.user.token, messages.data['post_title'], messages.data['confirm_post'])
                 Notification.objects.create(
@@ -165,6 +172,14 @@ class PostViewset(viewsets.ModelViewSet):
                     title=messages.data['post_title'],
                     body=messages.data['confirm_post'],
                 )
+                status_changes = StatusChanges.objects.create(
+                    user=request.user,
+                    from_status=post.status,
+                    to_status=status,
+                    post=post
+                )
+                post.status = status
+                post.save()
             elif status == 'going':
                 send_message(post.user.token, messages.data['post_title'], messages.data['going_post'])
                 Notification.objects.create(
@@ -173,7 +188,14 @@ class PostViewset(viewsets.ModelViewSet):
                     title=messages.data['post_title'],
                     body=messages.data['going_post'],
                 )
-
+                status_changes = StatusChanges.objects.create(
+                    user=request.user,
+                    from_status=post.status,
+                    to_status=status,
+                    post=post
+                )
+                post.status = status
+                post.save()
             return Response("Changed", status=HTTP_200_OK)
         return Response("Post not found", status=HTTP_400_BAD_REQUEST)
 
