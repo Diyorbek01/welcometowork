@@ -77,10 +77,10 @@ class NotificationMobile(viewsets.ModelViewSet):
     def change_notification_status(self, request):
         id_list = request.data.get('id')
         for id in id_list:
-            notification = get_object_or_404(Notification.objects.get(id=id))
+            notification = Notification.objects.get(id=id)
             notification.is_new = False
             notification.save()
-        notifications = Notification.objects.filter(user=request.user_id, is_new=True)
+        notifications = Notification.objects.filter(user=request.user.id, is_new=True).order_by("-created_at")
         serializer = self.get_serializer_class()(notifications, many=True)
         return Response(serializer.data)
 
