@@ -1,15 +1,22 @@
+from datetime import timedelta
+
 from decouple import config
 from django.db.models import Q
+from django.utils.timezone import now
 from rest_framework import viewsets, authentication, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.views import APIView
 
+import messages
 from client.user.serializers import UserSerializer, UserGetSerializer, UserPostSerializer, UserProfileUpdateSerializer, \
     NotificationMobileSerializer
 from freelancer.proposals.models import Notification
+from pusher import send_message
 from .models import User
+from ..post.models import Post
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -57,14 +64,14 @@ class UserViewset(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False)
     def change_phone_number(self, request):
         user = request.user
-        phone_number = request.data.get("phone_number",None)
+        phone_number = request.data.get("phone_number", None)
         try:
-            user.phone_number=phone_number
-            user.username=phone_number
+            user.phone_number = phone_number
+            user.username = phone_number
             user.save()
-            return Response({"message":"Changed"}, status=HTTP_200_OK)
+            return Response({"message": "Changed"}, status=HTTP_200_OK)
         except:
-            return Response({"error":"This phone number already exists"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"error": "This phone number already exists"}, status=HTTP_400_BAD_REQUEST)
 
 
 class NotificationMobile(viewsets.ModelViewSet):
@@ -80,13 +87,39 @@ class NotificationMobile(viewsets.ModelViewSet):
             notification = Notification.objects.get(id=id)
             notification.is_new = False
             notification.save()
-        notifications = Notification.objects.filter(user=request.user.id, is_new=True).order_by("-created_at")
+        notifications = Notification.objects.filter(user__in=[request.user.id], is_new=True).order_by("-created_at")
         serializer = self.get_serializer_class()(notifications, many=True)
         return Response(serializer.data)
 
     @action(methods=['get'], detail=False)
     def get(self, request):
         user_id = request.user.id
-        notifications = Notification.objects.filter(user=user_id, is_new=True).order_by("-created_at")
+        notifications = Notification.objects.filter(user__in=[user_id], is_new=True).order_by("-created_at")
         serializer = self.get_serializer_class()(notifications, many=True)
         return Response(serializer.data)
+
+    @action(methods=['post'], detail=False)
+    def send_notification(self, request):
+        title = request.data.get('title')
+        body = request.data.get('body')
+
+        send_message([user.token for user in User.objects.all()], title, body)
+        notification = Notification.objects.create(
+            title=title,
+            body=body
+        )
+        for user in User.objects.all():
+            notification.user.add(user)
+        notification.save()
+        return Response({"message": "Request recieved"})
+
+
+class CronJob(APIView):
+    def get(self, request):
+        last_month = now() - timedelta(days=5)
+        posts = Post.objects.filter(~Q(status='finished'), updated_at__lt=last_month)
+        for post in posts:
+            send_message([post.user.token], messages.data["post_title"], "Sizning postingiz arxivga o'tkazildi")
+            post.status = "archived"
+            post.save()
+        return Response("Success")

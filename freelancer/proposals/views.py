@@ -28,14 +28,6 @@ class ProposalViewset(viewsets.ModelViewSet):
         serializer = ProposalSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            post = Post.objects.get(id=data.get('post'))
-            send_message(post.user.token, messages.data['proposal_title'], messages.data['create_proposal'])
-            Notification.objects.create(
-                user=post.user,
-                proposal=Proposal.objects.last(),
-                title=messages.data['proposal_title'],
-                body=messages.data['create_proposal'],
-            )
             user = request.user
             user.balance -= int(config('PRICE'))
             if user.balance > 0:
@@ -108,15 +100,6 @@ class ProposalViewset(viewsets.ModelViewSet):
                 proposal.post.user.save()
                 proposal.admin_status = status
                 proposal.save()
-                # Send message
-                send_message(proposal.user.token, messages.data['proposal_title'],
-                             messages.data['confirm_proposal_admin'])
-                Notification.objects.create(
-                    user=proposal.user,
-                    proposal=proposal,
-                    title=messages.data['proposal_title'],
-                    body=messages.data['confirm_proposal_admin'],
-                )
 
                 invoice = Invoice.objects.create(
                     user_id=proposal.post.user.id,
@@ -129,21 +112,22 @@ class ProposalViewset(viewsets.ModelViewSet):
                     to_status=status,
                     proposal=proposal
                 )
+                text = f"{proposal.post.user.get_full_name()} {messages.data['create_proposal']}"
+                send_message([proposal.post.user.token], messages.data['proposal_title'],
+                             text)
+                Notification.objects.create(
+                    user=proposal.post.user,
+                    proposal=proposal,
+                    title=messages.data['proposal_title'],
+                    body=text,
+                )
+
                 return Response("Changed", status=HTTP_200_OK)
             return Response({"message": "Foydalanuvchi hisobida mablag' yetarli emas!"}, status=HTTP_400_BAD_REQUEST)
 
-        else:
-            if status == "cancelled":
-                send_message(proposal.user.token, messages.data['proposal_title'], messages.data['cancelled_proposal'])
-                Notification.objects.create(
-                    user=proposal.user,
-                    proposal=proposal,
-                    title=messages.data['proposal_title'],
-                    body=messages.data['cancelled_proposal'],
-                )
-            proposal.admin_status = status
-            proposal.save()
-            return Response("Changed", status=HTTP_200_OK)
+        proposal.admin_status = status
+        proposal.save()
+        return Response("Changed", status=HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def change_client_status(self, request):
@@ -161,22 +145,6 @@ class ProposalViewset(viewsets.ModelViewSet):
         proposal.post_status = status
         proposal.post.user.save()
         proposal.save()
-        if status == "approved":
-            send_message(proposal.user.token, messages.data['proposal_title'], messages.data['confirm_proposal_client'])
-            Notification.objects.create(
-                user=proposal.user,
-                proposal=proposal,
-                title=messages.data['proposal_title'],
-                body=messages.data['confirm_proposal_client'],
-            )
-        elif status == "cancelled":
-            send_message(proposal.user.token, messages.data['proposal_title'], messages.data['cancelled_proposal'])
-            Notification.objects.create(
-                user=proposal.user,
-                proposal=proposal,
-                title=messages.data['proposal_title'],
-                body=messages.data['cancelled_proposal'],
-            )
 
         return Response("Changed", status=HTTP_200_OK)
 

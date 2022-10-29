@@ -1,20 +1,17 @@
-import base64
 
 from decouple import config
-from django.core.files.base import ContentFile
 # Create your views here.
 from rest_framework import viewsets, authentication, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 
-import messages
 from client.post.models import Post, PostImage, Wishlist, Timer
 from client.post.serializers import PostImageSerializer, PostGetLessSerializer, \
     PostMenuSerializer, WishListSerializer, PostFinishedSerializer, PostFinishedClientSerializer, \
     PostClientGetSerializer, TimerSerializer, TimerGetSerializer, PostImagePostSerializer, PostSerializer
-from freelancer.proposals.models import Proposal, StatusChanges, Review, Notification
-from pusher import send_message
+from client.post.utils import sender
+from freelancer.proposals.models import Proposal, StatusChanges, Review
 
 
 class PostViewset(viewsets.ModelViewSet):
@@ -131,13 +128,6 @@ class PostViewset(viewsets.ModelViewSet):
             if status == "finished" and post.is_hourly == False:
                 request.user.total_earnings += post.maximum_project_budget
                 request.user.save()
-                send_message(post.user.token, messages.data['post_title'], messages.data['finished_post'])
-                Notification.objects.create(
-                    user=post.user,
-                    post=post,
-                    title=messages.data['post_title'],
-                    body=messages.data['finished_post'],
-                )
             status_changes = StatusChanges.objects.create(
                 user=request.user,
                 from_status=post.status,
@@ -152,13 +142,6 @@ class PostViewset(viewsets.ModelViewSet):
             if status == "canceled":
                 post.user.balance += int(config['POST_PRICE'])
                 post.user.save()
-                send_message(post.user.token, messages.data['post_title'], messages.data['cancelled_post'])
-                Notification.objects.create(
-                    user=post.user,
-                    post=post,
-                    title=messages.data['post_title'],
-                    body=messages.data['cancelled_post'],
-                )
                 status_changes = StatusChanges.objects.create(
                     user=request.user,
                     from_status=post.status,
@@ -171,13 +154,7 @@ class PostViewset(viewsets.ModelViewSet):
                 proposal_last.post_status = "cancelled"
                 proposal_last.save()
             elif status == 'approved':
-                send_message(post.user.token, messages.data['post_title'], messages.data['confirm_post'])
-                Notification.objects.create(
-                    user=post.user,
-                    post=post,
-                    title=messages.data['post_title'],
-                    body=messages.data['confirm_post'],
-                )
+                sender(post)
                 status_changes = StatusChanges.objects.create(
                     user=request.user,
                     from_status=post.status,
@@ -187,13 +164,6 @@ class PostViewset(viewsets.ModelViewSet):
                 post.status = status
                 post.save()
             elif status == 'going':
-                send_message(post.user.token, messages.data['post_title'], messages.data['going_post'])
-                Notification.objects.create(
-                    user=post.user,
-                    post=post,
-                    title=messages.data['post_title'],
-                    body=messages.data['going_post'],
-                )
                 status_changes = StatusChanges.objects.create(
                     user=request.user,
                     from_status=post.status,
