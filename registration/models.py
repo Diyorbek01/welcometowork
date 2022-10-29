@@ -10,6 +10,7 @@ class Category(BaseModel):
         ("deactive", "deactive"),
     )
     name = models.CharField(max_length=200)
+    name_ru = models.CharField(max_length=200)
     status = models.CharField(choices=STATUS, default="active", max_length=20)
     image = models.FileField(upload_to="category/", max_length=200, null=True)
 
@@ -20,6 +21,7 @@ class Category(BaseModel):
 class SubCategory(BaseModel):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=150)
+    name_ru = models.CharField(max_length=150)
 
     def __str__(self):
         return self.name

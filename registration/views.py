@@ -69,7 +69,6 @@ class CityViewset(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False)
     def get(self, request):
         region_id = request.GET.get("region_id", None)
-
         cities = City.objects.filter(region_id=region_id)
         serializer = CitySerializer(cities, many=True)
         return Response(serializer.data, status=HTTP_200_OK)

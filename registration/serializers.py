@@ -8,7 +8,7 @@ from registration.models import Category, SubCategory, Region, City
 class CategoryLessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', "name"]
+        fields = ['id', "name", "name_ru"]
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -41,7 +41,7 @@ class CategoryGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['id', "name", 'images']
+        fields = ['id', "name", "name_ru", 'images']
 
     def get_images(self, obj):
         if obj.image:
@@ -51,6 +51,7 @@ class CategoryGetSerializer(serializers.ModelSerializer):
 
 class SubCategorySerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
+    category_ru = serializers.SerializerMethodField()
 
     class Meta:
         model = SubCategory
@@ -59,11 +60,14 @@ class SubCategorySerializer(serializers.ModelSerializer):
     def get_category(self, obj):
         return obj.category.name
 
+    def get_category_ru(self, obj):
+        return obj.category.name_ru
+
 
 class SubCategoryGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubCategory
-        fields = ["id", "name"]
+        fields = ["id", "name", "name_ru"]
 
 
 class SubCategoryPostSerializer(serializers.ModelSerializer):
