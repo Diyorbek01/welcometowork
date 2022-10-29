@@ -11,12 +11,14 @@ def sender(post):
     send_message([post.user.token], messages.data['post_title'], messages.data['confirm_post'])
     notif = Notification.objects.create(
         post=post,
+        status="post",
         title=messages.data['post_title'],
         body=messages.data['confirm_post'],
     )
     notif.user.add(post.user)
     notification = Notification.objects.create(
         post=post,
+        status="post",
         title=messages.data['post_title'],
         body=text,
     )

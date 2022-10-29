@@ -188,6 +188,7 @@ class PostClientGetSerializer(serializers.ModelSerializer):
     passed_date = serializers.SerializerMethodField()
     reviews = serializers.SerializerMethodField()
     is_applied = serializers.SerializerMethodField()
+    is_reviewed = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -207,6 +208,13 @@ class PostClientGetSerializer(serializers.ModelSerializer):
         user_id = self.context['user_id']
         proposals = Proposal.objects.filter(user_id=user_id, post_id=obj.id)
         if proposals:
+            return True
+        return False
+
+    def get_is_reviewed(self, obj):
+        user_id = self.context['user_id']
+        proposals = Review.objects.filter(post__user_id = user_id, post_id = obj.id)
+        if proposals.exists():
             return True
         return False
 

@@ -72,10 +72,17 @@ class StatusChanges(models.Model):
         return f"{self.from_status}->{self.to_status} | {self.user.get_full_name()}"
 
 class Notification(BaseModel):
+    STATUS = (
+        ("post", "post"),
+        ("proposal", "proposal"),
+        ("custom", "custom"),
+        ("archived", "archived"),
+    )
     user = models.ManyToManyField(User, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=200)
+    status = models.CharField(max_length=200, choices=STATUS, default="post")
     body = models.TextField()
     is_new = models.BooleanField(default=True)
 

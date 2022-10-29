@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 import messages
 from client.user.serializers import UserSerializer, UserGetSerializer, UserPostSerializer, UserProfileUpdateSerializer, \
     NotificationMobileSerializer
-from freelancer.proposals.models import Notification
+from freelancer.proposals.models import Notification, Proposal
 from pusher import send_message
 from .models import User
 from ..post.models import Post
@@ -106,7 +106,8 @@ class NotificationMobile(viewsets.ModelViewSet):
         send_message([user.token for user in User.objects.all()], title, body)
         notification = Notification.objects.create(
             title=title,
-            body=body
+            body=body,
+            status="custom",
         )
         for user in User.objects.all():
             notification.user.add(user)
@@ -116,10 +117,39 @@ class NotificationMobile(viewsets.ModelViewSet):
 
 class CronJob(APIView):
     def get(self, request):
-        last_month = now() - timedelta(days=5)
-        posts = Post.objects.filter(~Q(status='finished'), updated_at__lt=last_month)
+        last_month = now() - timedelta(days=30)
+        posts = Post.objects.filter(
+            ~Q(status='finished'),
+            ~Q(status='archived'),
+            ~Q(status='going'),
+            ~Q(status='canceled'),
+            created_at__lt=last_month
+        )
         for post in posts:
-            send_message([post.user.token], messages.data["post_title"], "Sizning postingiz arxivga o'tkazildi")
+            send_message([post.user.token], messages.data["post_title"], messages.data["archived_post"])
+            notification = Notification.objects.create(
+                post=post,
+                status="archived",
+                title=messages.data["post_title"],
+                body=messages.data["archived_post"]
+            )
             post.status = "archived"
             post.save()
+        proposals = Proposal.objects.filter(
+            ~Q(post_status='finished'),
+            ~Q(post_status='archived'),
+            ~Q(post_status='cancelled'),
+            ~Q(post_status='going'),
+            created_at__lt=last_month
+        )
+        for proposal in proposals:
+            send_message([proposal.post.user.token], messages.data["proposal_title"], messages.data["archived_proposal"])
+            notification = Notification.objects.create(
+                proposal=proposal,
+                status="archived",
+                title=messages.data["proposal_title"],
+                body=messages.data["archived_post"]
+            )
+            proposal.post_status = "archived"
+            proposal.save()
         return Response("Success")

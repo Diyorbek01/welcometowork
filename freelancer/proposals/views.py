@@ -116,6 +116,7 @@ class ProposalViewset(viewsets.ModelViewSet):
                 send_message([proposal.post.user.token], messages.data['proposal_title'],
                              text)
                 notification = Notification.objects.create(
+                    status="proposal",
                     proposal=proposal,
                     title=messages.data['proposal_title'],
                     body=text,
@@ -149,6 +150,7 @@ class ProposalViewset(viewsets.ModelViewSet):
         if status == "approved":
             send_message([proposal.user.token], messages.data['proposal_title'], messages.data['confirm_proposal'])
             notification = Notification.objects.create(
+                status="proposal",
                 proposal=proposal,
                 title=messages.data['proposal_title'],
                 body=messages.data['confirm_proposal'],
