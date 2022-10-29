@@ -85,7 +85,9 @@ class StatisticViewSet(viewsets.ModelViewSet):
             "total_clients": 0,
             "total_workers": 0,
             "registration_clients": [],
-            "registration_dates": []
+            "registration_dates": [],
+            "top_up_dates": [],
+            "withdraw_dates": []
         }]
         data[0]['total_users'] = User.objects.filter(is_delete=False, created_at__gt=start_date,
                                                      created_at__lte=finish_date).count()
