@@ -115,13 +115,13 @@ class ProposalViewset(viewsets.ModelViewSet):
                 text = f"{proposal.post.user.get_full_name()} {messages.data['create_proposal']}"
                 send_message([proposal.post.user.token], messages.data['proposal_title'],
                              text)
-                Notification.objects.create(
-                    user=proposal.post.user,
+                notification = Notification.objects.create(
                     proposal=proposal,
                     title=messages.data['proposal_title'],
                     body=text,
                 )
-
+                notification.user.add(proposal.post.user)
+                notification.save()
                 return Response("Changed", status=HTTP_200_OK)
             return Response({"message": "Foydalanuvchi hisobida mablag' yetarli emas!"}, status=HTTP_400_BAD_REQUEST)
 
@@ -148,12 +148,13 @@ class ProposalViewset(viewsets.ModelViewSet):
 
         if status == "approved":
             send_message([proposal.user.token], messages.data['proposal_title'], messages.data['confirm_proposal'])
-            Notification.objects.create(
-                user=proposal.user,
+            notification = Notification.objects.create(
                 proposal=proposal,
                 title=messages.data['proposal_title'],
                 body=messages.data['confirm_proposal'],
             )
+            notification.user.add(proposal.user)
+            notification.save()
 
         return Response("Changed", status=HTTP_200_OK)
 
