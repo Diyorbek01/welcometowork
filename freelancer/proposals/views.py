@@ -146,6 +146,15 @@ class ProposalViewset(viewsets.ModelViewSet):
         proposal.post.user.save()
         proposal.save()
 
+        if status == "approved":
+            send_message([proposal.user.token], messages.data['proposal_title'], messages.data['confirm_proposal'])
+            Notification.objects.create(
+                user=proposal.user,
+                proposal=proposal,
+                title=messages.data['proposal_title'],
+                body=messages.data['confirm_proposal'],
+            )
+
         return Response("Changed", status=HTTP_200_OK)
 
     @action(methods=['get'], detail=False)

@@ -5,5 +5,6 @@ data = {
     "post_workers": "ishi joylandi",
 
     "proposal_title": "Taklif uchun xabar",
-    "create_proposal": "tomonidan taklif tushdi"
+    "create_proposal": "tomonidan taklif tushdi",
+    "confirm_proposal": "Sizning taklifingiz qabul qilindi"
 }
