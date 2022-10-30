@@ -51,3 +51,27 @@ class NotificationViewSet(viewsets.ModelViewSet):
         result = functools.reduce(lambda x, y,: x + y, data)
         data = sorted(result, key=lambda d: d['created_at'])
         return Response(data, status=HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def change_status(self, request):
+        status = request.data.get("status", None)
+        id = request.data.get("id", None)
+        if status == "post":
+            post = Post.objects.get(id=id)
+            post.is_new = False
+            post.save()
+        elif status == "proposal":
+            proposal = Proposal.objects.get(id=id)
+            proposal.is_new = False
+            proposal.save()
+        elif status == "user":
+            user = User.objects.get(id=id)
+            user.is_new = False
+            user.save()
+        elif status == "portfolio":
+            portfolio = Portfolio.objects.get(id=id)
+            portfolio.is_new = False
+            portfolio.save()
+        else:
+            return Response({"error": "Request not found"}, status=HTTP_400_BAD_REQUEST)
+        return Response({"message": "Changed"}, status=HTTP_200_OK)
