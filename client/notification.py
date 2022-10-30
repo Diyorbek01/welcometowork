@@ -18,8 +18,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False)
     def get(self, request):
         data = []
-        posts = Post.objects.filter(is_new=True)
-        proposals = Proposal.objects.filter(is_new=True)
+        posts = Post.objects.filter(admin_status="sent")
+        proposals = Proposal.objects.filter(admin_status="pending")
         portfolios = Portfolio.objects.filter(is_new=True)
         client = User.objects.filter(is_new=True, role='client')
         worker = User.objects.filter(is_new=True, role='freelancer')
