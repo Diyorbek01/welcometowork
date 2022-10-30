@@ -64,7 +64,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
             proposal = Proposal.objects.get(id=id)
             proposal.is_new = False
             proposal.save()
-        elif status == "user":
+        elif status == "client" or status == "freelancer":
             user = User.objects.get(id=id)
             user.is_new = False
             user.save()
