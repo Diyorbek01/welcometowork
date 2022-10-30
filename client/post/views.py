@@ -1,4 +1,3 @@
-
 from decouple import config
 # Create your views here.
 from rest_framework import viewsets, authentication, permissions
@@ -124,7 +123,7 @@ class PostViewset(viewsets.ModelViewSet):
         post = Post.objects.get(id=post_id)
         proposal = Proposal.objects.filter(post_id=post_id, user_id=request.user.id, admin_status="approved",
                                            client_status="approved")
-        if proposal.exists():
+        if proposal.exists() and request.user.role == "freelancer":
             if status == "finished" and post.is_hourly == False:
                 request.user.total_earnings += post.maximum_project_budget
                 request.user.save()
@@ -175,6 +174,10 @@ class PostViewset(viewsets.ModelViewSet):
                 proposal_last = proposal.last()
                 proposal_last.post_status = status
                 proposal_last.save()
+            return Response("Changed", status=HTTP_200_OK)
+        elif request.user.role != "freelancer":
+            post.status = status
+            post.save()
             return Response("Changed", status=HTTP_200_OK)
         return Response("Post not found", status=HTTP_400_BAD_REQUEST)
 
