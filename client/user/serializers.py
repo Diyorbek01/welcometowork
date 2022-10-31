@@ -167,14 +167,16 @@ class NotificationMobileSerializer(serializers.ModelSerializer):
                     id=obj.post.id,
                     headline=obj.post.headline,
                     price=f"{obj.post.hourly_from_budget}-{obj.post.hourly_from_budget}",
-                    region=obj.post.user.region.name
+                    region=obj.post.user.region.name,
+                    is_hourly=obj.post.is_hourly
                 )
             else:
                 return dict(
                     id=obj.post.id,
                     headline=obj.post.headline,
                     maximum_project_budget=str(obj.post.maximum_project_budget),
-                    region=obj.post.user.region.name
+                    region=obj.post.user.region.name,
+                    is_hourly=obj.post.is_hourly
                 )
         return None
 
@@ -186,6 +188,7 @@ class NotificationMobileSerializer(serializers.ModelSerializer):
                 user={
                     "id": obj.proposal.user_id,
                     "full_name": obj.proposal.user.get_full_name(),
+                    "overview": obj.proposal.user.overview,
                     "region": obj.proposal.user.region.name
                 },
             )

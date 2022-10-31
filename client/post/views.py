@@ -176,6 +176,7 @@ class PostViewset(viewsets.ModelViewSet):
                 proposal_last.save()
             return Response("Changed", status=HTTP_200_OK)
         elif request.user.role != "freelancer":
+            sender(post)
             post.status = status
             post.save()
             return Response("Changed", status=HTTP_200_OK)
