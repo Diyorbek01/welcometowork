@@ -162,22 +162,23 @@ class NotificationMobileSerializer(serializers.ModelSerializer):
 
     def get_post(self, obj):
         if obj.post:
-            if obj.post.is_hourly:
+            if obj.post.user.region:
                 return dict(
                     id=obj.post.id,
                     headline=obj.post.headline,
+                    region=obj.post.region.name,
                     price=f"{obj.post.hourly_from_budget}-{obj.post.hourly_from_budget}",
-                    region=obj.post.user.region.name,
                     is_hourly=obj.post.is_hourly
                 )
+
             else:
                 return dict(
                     id=obj.post.id,
                     headline=obj.post.headline,
                     maximum_project_budget=str(obj.post.maximum_project_budget),
-                    region=obj.post.user.region.name,
                     is_hourly=obj.post.is_hourly
                 )
+
         return None
 
     def get_proposal(self, obj):
