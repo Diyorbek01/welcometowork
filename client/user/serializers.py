@@ -175,6 +175,7 @@ class NotificationMobileSerializer(serializers.ModelSerializer):
                 return dict(
                     id=obj.post.id,
                     headline=obj.post.headline,
+                    region=None,
                     maximum_project_budget=str(obj.post.maximum_project_budget),
                     is_hourly=obj.post.is_hourly
                 )
