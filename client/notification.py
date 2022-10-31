@@ -29,7 +29,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         data.append(ClientGetSerializer(client, many=True).data)
         data.append(WorkerGetSerializer(worker, many=True).data)
         result = functools.reduce(lambda x, y,: x + y, data)
-        data = sorted(result, key=lambda d: d['created_at'])
+        data = sorted(result, key=lambda d: d['created_at'], reverse=True)
         return Response(data, status=HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
