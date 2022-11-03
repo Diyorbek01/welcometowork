@@ -53,9 +53,11 @@ class StatisticViewSet(viewsets.ModelViewSet):
         # for invoice in Invoice.objects.filter(is_withdraw=False):
         data[0]['top_up'] = dict(
             # "invoice_id": Category.objects.get(id=invoice.id).id,
-            invoice_client=Invoice.objects.filter(is_withdraw=False, user__role="client").values('created_at__date').order_by(
+            invoice_client=Invoice.objects.filter(is_withdraw=False, user__role="client").values(
+                'created_at__date').order_by(
                 'created_at__date').annotate(sum=Sum('amount')),
-            invoice_freelancer=Invoice.objects.filter(is_withdraw=False, user__role="freelancer").values('created_at__date').order_by(
+            invoice_freelancer=Invoice.objects.filter(is_withdraw=False, user__role="freelancer").values(
+                'created_at__date').order_by(
                 'created_at__date').annotate(sum=Sum('amount')))
 
         data[0]['withdraw'] = dict(
@@ -120,25 +122,40 @@ class StatisticViewSet(viewsets.ModelViewSet):
 
         data[0]['top_up'] = dict(
             # "invoice_id": Category.objects.get(id=invoice.id).id,
-            invoice=Invoice.objects.filter(is_withdraw=False, created_at__gt=start_date,
-                                           created_at__lte=finish_date).values('created_at__date',
-                                                                               'user__role').order_by(
-                'created_at__date').annotate(sum=Sum('amount')))
+            # invoice=Invoice.objects.filter(is_withdraw=False, created_at__gt=start_date,
+            #                                created_at__lte=finish_date).values('created_at__date',
+            #                                                                    'user__role').order_by(
+            #     'created_at__date').annotate(sum=Sum('amount'))
+            invoice_client=Invoice.objects.filter(is_withdraw=False, user__role="client", created_at__gt=start_date,
+                                                  created_at__lte=finish_date).values(
+                'created_at__date').order_by(
+                'created_at__date').annotate(sum=Sum('amount')),
+            invoice_freelancer=Invoice.objects.filter(is_withdraw=False, user__role="freelancer",
+                                                      created_at__gt=start_date,
+                                                      created_at__lte=finish_date).values(
+                'created_at__date').order_by(
+                'created_at__date').annotate(sum=Sum('amount'))
+        )
 
         data[0]['withdraw'] = dict(
             # "invoice_id": Category.objects.get(id=invoice.id).id,
-            invoice=Invoice.objects.filter(is_withdraw=True, created_at__gt=start_date,
-                                           created_at__lte=finish_date).values('created_at__date',
-                                                                               'user__role').order_by(
+            invoice_client=Invoice.objects.filter(is_withdraw=True, user__role="client", created_at__gt=start_date,
+                                                  created_at__lte=finish_date).values(
+                'created_at__date').order_by(
+                'created_at__date').annotate(sum=Sum('amount')),
+            invoice_freelancer=Invoice.objects.filter(is_withdraw=True, user__role="freelancer",
+                                                      created_at__gt=start_date,
+                                                      created_at__lte=finish_date).values(
+                'created_at__date').order_by(
                 'created_at__date').annotate(sum=Sum('amount')))
 
         for invoice in Invoice.objects.filter(is_withdraw=False, created_at__gt=start_date,
                                               created_at__lte=finish_date).order_by('created_at'):
             if invoice.created_at.date() not in data[0]['top_up_dates']:
                 data[0]['top_up_dates'].append(invoice.created_at.date())
-        for invoice in Invoice.objects.filter(is_withdraw=True, created_at__gt=start_date,
-                                              created_at__lte=finish_date).order_by('created_at'):
-            if invoice.created_at.date() not in data[0]['withdraw_dates']:
-                data[0]['withdraw_dates'].append(invoice.created_at.date())
+            for invoice in Invoice.objects.filter(is_withdraw=True, created_at__gt=start_date,
+                                                  created_at__lte=finish_date).order_by('created_at'):
+                if invoice.created_at.date() not in data[0]['withdraw_dates']:
+                    data[0]['withdraw_dates'].append(invoice.created_at.date())
 
         return Response(data)

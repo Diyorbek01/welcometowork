@@ -34,7 +34,7 @@ class Proposal(BaseModel):
     is_new = models.BooleanField(default=True)
     admin_status = models.CharField(max_length=25, choices=ADMIN_STATUS, default='pending')
     client_status = models.CharField(max_length=25, choices=CLIENT_STATUS, default='pending')
-    post_status = models.CharField(max_length=25, choices=CLIENT_STATUS, default='pending')
+    post_status = models.CharField(max_length=25, choices=POST_STATUS, default='pending')
 
     def __str__(self):
         return f"{self.user.get_full_name()} | {self.post.headline}"
