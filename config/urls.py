@@ -46,7 +46,7 @@ urlpatterns = [
     path("api/v1/auth/reset_password/", auth.reset_password),
     path("api/v1/auth/create_password/", auth.create_password),
 
-    path('api/payme/', include('paymeuz.urls')),
+    path('api/v1/payme/', include('paymeuz.urls')),
 
     path('__debug__/', include('debug_toolbar.urls')),
 ]
