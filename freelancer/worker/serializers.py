@@ -1,8 +1,9 @@
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from rest_framework import serializers
 
+from client.post.models import Post
 from client.user.models import User
-from freelancer.proposals.models import Review, Invoice
+from freelancer.proposals.models import Review, Invoice, Proposal
 from freelancer.proposals.serializers import ReviewGetSerializer
 from freelancer.worker.models import Portfolio, PortfolioImage
 from registration.serializers import RegionSerializer, CitySerializer, SubCategorySerializer, \
@@ -78,12 +79,15 @@ class WorkerGetSerializer(serializers.ModelSerializer):
     portfolio = serializers.SerializerMethodField()
     reviews = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
+    number_of_proposals = serializers.SerializerMethodField()
+    number_of_posts = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'phone_number', 'password', 'title', 'overview',
                   'payment_hourly', 'street', 'role', 'avatar', 'created_at', 'updated_at', 'region', 'city', 'skills',
-                  'portfolio', "telegram", "experience", "categories", "is_online", "reviews", "rating"]
+                  'portfolio', "telegram", "experience", "categories", "is_online", "reviews", "rating", "balance",
+                  "total_earnings", "total_spent", "number_of_proposals", "number_of_posts"]
 
     def get_rating(self, obj):
         result = Review.objects.filter(user_id=obj.id, is_client=True).aggregate(avarage=Avg("rate"))
@@ -111,6 +115,12 @@ class WorkerGetSerializer(serializers.ModelSerializer):
         portfolios = Portfolio.objects.filter(user_id=obj.id)
         serializer = PortfolioSerializer(portfolios, many=True)
         return serializer.data
+
+    def get_number_of_proposals(self, obj):
+        return Proposal.objects.filter(user_id=obj.id).count()
+
+    def get_number_of_posts(self, obj):
+        return Post.objects.filter(status='finished', user_id=obj.id).count()
 
 
 class WorkerGetProfileSerializer(serializers.ModelSerializer):

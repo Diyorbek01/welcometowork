@@ -1,7 +1,9 @@
+from django.db.models import Q
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 
+from client.post.models import Post
+from client.user.models import User
+from freelancer.proposals.models import Proposal
 from registration.models import Category, SubCategory, Region, City
 
 
@@ -14,6 +16,9 @@ class CategoryLessSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     skills = serializers.SerializerMethodField()
+    number_of_workers = serializers.SerializerMethodField()
+    number_of_posts = serializers.SerializerMethodField()
+    number_of_proposals = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -28,6 +33,17 @@ class CategorySerializer(serializers.ModelSerializer):
         skills = SubCategory.objects.filter(category_id=obj.id)
         serializer = SubCategoryGetSerializer(skills, many=True)
         return serializer.data
+
+    def get_number_of_workers(self, obj):
+        return User.objects.filter(role='freelancer', is_delete=False, categories__in=[obj.id]).count()
+
+    def get_number_of_posts(self, obj):
+        return Post.objects.filter(Q(status='approved') | Q(status='going'), is_delete=False,
+                                   categories__in=[obj.id]).count()
+
+    def get_number_of_proposals(self, obj):
+        return Proposal.objects.filter(Q(post_status='approved') | Q(post_status='going'),
+                                       post__categories__in=[obj.id]).count()
 
 
 class CategoryPostSerializer(serializers.ModelSerializer):
