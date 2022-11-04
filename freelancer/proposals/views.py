@@ -31,13 +31,13 @@ class ProposalViewset(viewsets.ModelViewSet):
             user.balance -= int(config('PRICE'))
             if user.balance > 0:
                 serializer.save()
-                user.total_spent += int(config('PRICE'))
-                user.save()
-                invoice = Invoice.objects.create(
-                    user_id=user.id,
-                    is_withdraw=True,
-                    amount=int(config('PRICE'))
-                )
+                # user.total_spent += int(config('PRICE'))
+                # user.save()
+                # invoice = Invoice.objects.create(
+                #     user_id=user.id,
+                #     is_withdraw=True,
+                #     amount=int(config('PRICE'))
+                # )
                 return Response(serializer.data, status=HTTP_201_CREATED)
             return Response({'message': "Hisobingizda mablag' yetarli emas"}, status=HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
@@ -94,37 +94,26 @@ class ProposalViewset(viewsets.ModelViewSet):
 
         proposal = Proposal.objects.get(id=proposal_id)
         if status == 'approved':
-            proposal.post.user.balance -= int(config('PRICE'))
-            if proposal.post.user.balance > 0:
-                proposal.post.user.total_spent += int(config('PRICE'))
-                proposal.post.user.save()
-                proposal.admin_status = status
-                proposal.save()
-
-                invoice = Invoice.objects.create(
-                    user_id=proposal.post.user.id,
-                    is_withdraw=True,
-                    amount=int(config('PRICE'))
-                )
-                status_changes = StatusChanges.objects.create(
-                    user=request.user,
-                    from_status=proposal.admin_status,
-                    to_status=status,
-                    proposal=proposal
-                )
-                text = f"{proposal.post.user.get_full_name()} {messages.data['create_proposal']}"
-                send_message([proposal.post.user.token], messages.data['proposal_title'],
-                             text)
-                notification = Notification.objects.create(
-                    status="proposal",
-                    proposal=proposal,
-                    title=messages.data['proposal_title'],
-                    body=text,
-                )
-                notification.user.add(proposal.post.user)
-                notification.save()
-                return Response("Changed", status=HTTP_200_OK)
-            return Response({"message": "Foydalanuvchi hisobida mablag' yetarli emas!"}, status=HTTP_400_BAD_REQUEST)
+            proposal.admin_status = status
+            proposal.save()
+            status_changes = StatusChanges.objects.create(
+                user=request.user,
+                from_status=proposal.admin_status,
+                to_status=status,
+                proposal=proposal
+            )
+            text = f"{proposal.post.user.get_full_name()} {messages.data['create_proposal']}"
+            send_message([proposal.post.user.token], messages.data['proposal_title'],
+                         text)
+            notification = Notification.objects.create(
+                status="proposal",
+                proposal=proposal,
+                title=messages.data['proposal_title'],
+                body=text,
+            )
+            notification.user.add(proposal.post.user)
+            notification.save()
+            return Response("Changed", status=HTTP_200_OK)
 
         proposal.admin_status = status
         proposal.save()
@@ -132,31 +121,48 @@ class ProposalViewset(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False)
     def change_client_status(self, request):
+        # For Client
         proposal_id = request.GET.get("proposal_id", None)
         status = request.GET.get("status", None)
 
         proposal = Proposal.objects.get(id=proposal_id)
-        status_changes = StatusChanges.objects.create(
-            user=request.user,
-            from_status=proposal.client_status,
-            to_status=status,
-            proposal=proposal
-        )
+
+        balance = proposal.user.balance - int(config('PRICE'))
+        if status == "approved":
+            if balance > 0:
+                proposal.user.balance -= int(config('PRICE'))
+                proposal.user.total_spent += int(config('PRICE'))
+                proposal.client_status = status
+                proposal.post_status = status
+                proposal.user.save()
+                proposal.save()
+                invoice = Invoice.objects.create(
+                    user_id=proposal.user.id,
+                    is_withdraw=True,
+                    amount=int(config('PRICE'))
+                )
+                status_changes = StatusChanges.objects.create(
+                    user=request.user,
+                    from_status=proposal.client_status,
+                    to_status=status,
+                    proposal=proposal
+                )
+                send_message([proposal.user.token], messages.data['proposal_title'], messages.data['confirm_proposal'])
+                notification = Notification.objects.create(
+                    status="proposal",
+                    proposal=proposal,
+                    title=messages.data['proposal_title'],
+                    body=messages.data['confirm_proposal'],
+                )
+                notification.user.add(proposal.user)
+                notification.save()
+                return Response("Changed", status=HTTP_200_OK)
+            else:
+                return Response({"message": "Hisobingizda mablag' yetarli emas!"}, status=HTTP_400_BAD_REQUEST)
+
         proposal.client_status = status
         proposal.post_status = status
-        proposal.post.user.save()
         proposal.save()
-
-        if status == "approved":
-            send_message([proposal.user.token], messages.data['proposal_title'], messages.data['confirm_proposal'])
-            notification = Notification.objects.create(
-                status="proposal",
-                proposal=proposal,
-                title=messages.data['proposal_title'],
-                body=messages.data['confirm_proposal'],
-            )
-            notification.user.add(proposal.user)
-            notification.save()
 
         return Response("Changed", status=HTTP_200_OK)
 
@@ -204,7 +210,7 @@ class InvoiceViewset(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False)
     def get_list(self, request):
-        invoices = Invoice.objects.all()
+        invoices = Invoice.objects.all().order_by("-created_at")
         serializer = InvoiceGetSerializer(invoices, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -215,10 +221,10 @@ class InvoiceViewset(viewsets.ModelViewSet):
         min_summa = request.GET.get('min_summa', None)
         max_summa = request.GET.get('max_summa', None)
         if min_summa and max_summa:
-            invoices = Invoice.objects.filter(amount__gte=min_summa, amount__lte=max_summa)
+            invoices = Invoice.objects.filter(amount__gte=min_summa, amount__lte=max_summa).order_by("-created_at")
             if start_date and finish_date:
                 new_invoices = invoices.filter(created_at__gt=start_date,
-                                               created_at__lte=finish_date)
+                                               created_at__lte=finish_date).order_by("-created_at")
                 serializer = InvoiceGetSerializer(new_invoices, many=True)
                 return Response(serializer.data, status=HTTP_200_OK)
             serializer = InvoiceGetSerializer(invoices, many=True)
