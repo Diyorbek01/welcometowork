@@ -27,10 +27,10 @@ class ProposalViewset(viewsets.ModelViewSet):
         data = request.data
         serializer = ProposalSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
             user = request.user
             user.balance -= int(config('PRICE'))
             if user.balance > 0:
+                serializer.save()
                 user.total_spent += int(config('PRICE'))
                 user.save()
                 invoice = Invoice.objects.create(
