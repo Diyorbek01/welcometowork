@@ -164,7 +164,7 @@ class ProposalViewset(viewsets.ModelViewSet):
     def get_post(self, request):
         # status = request.GET.get("status")
         user_id = request.user.id
-        proposals = Proposal.objects.all().order_by("-updated_at")
+        proposals = Proposal.objects.filter(user_id=user_id).order_by("-updated_at")
         serializer = ProposalPostSerializer(proposals, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
