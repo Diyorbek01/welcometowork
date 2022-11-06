@@ -76,6 +76,7 @@ class Notification(BaseModel):
         ("post", "post"),
         ("proposal", "proposal"),
         ("custom", "custom"),
+        ("bonus", "bonus"),
         ("archived", "archived"),
     )
     user = models.ManyToManyField(User, blank=True)

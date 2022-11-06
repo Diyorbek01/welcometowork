@@ -59,6 +59,15 @@ class UserViewset(viewsets.ModelViewSet):
         price = int(config('BONUS_PRICE'))
         user.balance += price
         user.save()
+        send_message([user.token], messages.data['bonus_title'],
+                     messages.data['bonus_message'])
+        notification = Notification.objects.create(
+            title=messages.data['bonus_title'],
+            body=messages.data['bonus_message'],
+            status="bonus"
+        )
+        notification.user.add(user)
+        notification.save()
         return Response({"message": "Accepted successfully"}, status=HTTP_200_OK)
 
     @action(methods=['post'], detail=False)
@@ -143,7 +152,8 @@ class CronJob(APIView):
             created_at__lt=last_month
         )
         for proposal in proposals:
-            send_message([proposal.post.user.token], messages.data["proposal_title"], messages.data["archived_proposal"])
+            send_message([proposal.post.user.token], messages.data["proposal_title"],
+                         messages.data["archived_proposal"])
             notification = Notification.objects.create(
                 proposal=proposal,
                 status="archived",
