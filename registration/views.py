@@ -61,6 +61,16 @@ class RegionsViewset(viewsets.ModelViewSet):
     queryset = Region.objects.all()
     serializer_class = RegionSerializer
 
+    @action(methods=['post'], detail=False)
+    def post(self, request):
+        data = request.data.get("data")
+        for i in data:
+            Region.objects.create(
+                name=i['name'],
+                name_ru=i['name_ru'],
+            )
+        return Response("created")
+
 
 class CityViewset(viewsets.ModelViewSet):
     queryset = City.objects.all()
@@ -72,3 +82,14 @@ class CityViewset(viewsets.ModelViewSet):
         cities = City.objects.filter(region_id=region_id)
         serializer = CitySerializer(cities, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def post(self, request):
+        data = request.data.get("data")
+        for i in data:
+            City.objects.create(
+                region_id=i['region_id'],
+                name=i['name_uz'],
+                name_ru=i['name_ru'],
+            )
+        return Response("created")

@@ -29,6 +29,7 @@ class SubCategory(BaseModel):
 
 class Region(BaseModel):
     name = models.CharField(max_length=150)
+    name_ru = models.CharField(max_length=150, null=True)
 
     def __str__(self):
         return self.name
@@ -37,6 +38,7 @@ class Region(BaseModel):
 class City(BaseModel):
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
     name = models.CharField(max_length=150)
+    name_ru = models.CharField(max_length=150, null=True)
 
     def __str__(self):
         return self.name
