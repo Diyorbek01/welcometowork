@@ -10,7 +10,7 @@ from client.post.serializers import PostImageSerializer, PostGetLessSerializer, 
     PostMenuSerializer, WishListSerializer, PostFinishedSerializer, PostFinishedClientSerializer, \
     PostClientGetSerializer, TimerSerializer, TimerGetSerializer, PostImagePostSerializer, PostSerializer
 from client.post.utils import sender
-from freelancer.proposals.models import Proposal, StatusChanges, Review
+from freelancer.proposals.models import Proposal, StatusChanges, Review, Invoice
 
 
 class PostViewset(viewsets.ModelViewSet):
@@ -139,8 +139,7 @@ class PostViewset(viewsets.ModelViewSet):
             proposal_last.post_status = status
             proposal_last.save()
             if status == "canceled":
-                post.user.balance += int(config['POST_PRICE'])
-                post.user.save()
+
                 status_changes = StatusChanges.objects.create(
                     user=request.user,
                     from_status=post.status,
@@ -178,6 +177,15 @@ class PostViewset(viewsets.ModelViewSet):
         elif request.user.role != "freelancer":
             if status == "approved":
                 sender(post)
+                post.user.balance -= int(config('POST_PRICE'))
+                if post.user.balance > 0:
+                    return Response("Client hisobida yetarlicha mablag' mavjud emas", status=HTTP_400_BAD_REQUEST)
+                invoice = Invoice.objects.create(
+                    user_id=post.user.id,
+                    is_withdraw=True,
+                    amount=int(config('POST_PRICE'))
+                )
+                post.user.save()
             post.status = status
             post.save()
             return Response("Changed", status=HTTP_200_OK)
