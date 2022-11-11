@@ -96,7 +96,7 @@ class PostViewset(viewsets.ModelViewSet):
     def create_post(self, request):
         price = int(config('POST_PRICE'))
         balance = request.user.balance
-        if (balance - price) > 0:
+        if (balance - price) > -1:
             data = request.data
             serializer = PostSerializer(data=data)
             if serializer.is_valid():
@@ -178,7 +178,7 @@ class PostViewset(viewsets.ModelViewSet):
             if status == "approved":
                 sender(post)
                 post.user.balance -= int(config('POST_PRICE'))
-                if post.user.balance > 0:
+                if post.user.balance > -1:
                     return Response("Client hisobida yetarlicha mablag' mavjud emas", status=HTTP_400_BAD_REQUEST)
                 invoice = Invoice.objects.create(
                     user_id=post.user.id,

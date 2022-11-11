@@ -29,7 +29,7 @@ class ProposalViewset(viewsets.ModelViewSet):
         if serializer.is_valid():
             user = request.user
             user.balance -= int(config('PRICE'))
-            if user.balance > 0:
+            if user.balance > -1:
                 serializer.save()
                 # user.total_spent += int(config('PRICE'))
                 # user.save()
@@ -129,7 +129,7 @@ class ProposalViewset(viewsets.ModelViewSet):
 
         balance = proposal.user.balance - int(config('PRICE'))
         if status == "approved":
-            if balance > 0:
+            if balance > -1:
                 proposal.user.balance -= int(config('PRICE'))
                 proposal.user.total_spent += int(config('PRICE'))
                 proposal.client_status = status
