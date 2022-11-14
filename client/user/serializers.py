@@ -67,7 +67,8 @@ class UserSerializer(serializers.ModelSerializer):
         return result
 
     def get_number_of_posts(self, obj):
-        return Post.objects.filter(~Q(status="archived"), ~Q(status="canceled"), ~Q(status="sent"), user_id=obj.id).count()
+        return Post.objects.filter(~Q(status="archived"), ~Q(status="canceled"), ~Q(status="sent"),
+                                   user_id=obj.id).count()
 
     def get_number_of_recieved_proposals(self, obj):
         return Proposal.objects.filter(post__user_id=obj.id, client_status="approved").count()
@@ -185,6 +186,7 @@ class ProposalUserDetailsSerializer(serializers.ModelSerializer):
 class NotificationMobileSerializer(serializers.ModelSerializer):
     post = serializers.SerializerMethodField(read_only=True)
     proposal = serializers.SerializerMethodField(read_only=True)
+    review = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Notification
@@ -224,4 +226,10 @@ class NotificationMobileSerializer(serializers.ModelSerializer):
                     "region": obj.proposal.user.region.name
                 },
             )
+        return None
+
+    def get_review(self, obj):
+        if obj.review:
+            serializer = ReviewGetSerializer(obj.review)
+            return serializer.data
         return None

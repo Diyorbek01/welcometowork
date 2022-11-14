@@ -8,7 +8,9 @@ from pusher import send_message
 
 @receiver(post_save, sender=Review)
 def send_notification(sender, instance, created, **kwargs):
+    print("aa")
     if created:
+        print("aaaaa")
         notification = Notification.objects.create(
             user=instance.post.user,
             post=instance.post,
