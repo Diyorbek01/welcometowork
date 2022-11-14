@@ -78,10 +78,12 @@ class Notification(BaseModel):
         ("custom", "custom"),
         ("bonus", "bonus"),
         ("archived", "archived"),
+        ("review", "review"),
     )
     user = models.ManyToManyField(User, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, null=True, blank=True)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=200)
     status = models.CharField(max_length=200, choices=STATUS, default="post")
     body = models.TextField()

@@ -196,7 +196,7 @@ class NotificationMobileSerializer(serializers.ModelSerializer):
                 return dict(
                     id=obj.post.id,
                     headline=obj.post.headline,
-                    region=obj.post.region.name,
+                    region=obj.post.address,
                     price=f"{obj.post.hourly_from_budget}-{obj.post.hourly_from_budget}",
                     is_hourly=obj.post.is_hourly
                 )
