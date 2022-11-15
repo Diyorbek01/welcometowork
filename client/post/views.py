@@ -178,7 +178,7 @@ class PostViewset(viewsets.ModelViewSet):
             if status == "approved":
                 sender(post)
                 post.user.balance -= int(config('POST_PRICE'))
-                if post.user.balance > -1:
+                if post.user.balance < -1:
                     return Response("Client hisobida yetarlicha mablag' mavjud emas", status=HTTP_400_BAD_REQUEST)
                 invoice = Invoice.objects.create(
                     user_id=post.user.id,
