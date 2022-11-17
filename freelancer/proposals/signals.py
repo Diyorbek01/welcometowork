@@ -8,15 +8,17 @@ from pusher import send_message
 
 @receiver(post_save, sender=Review)
 def send_notification(sender, instance, created, **kwargs):
-    print("aa")
     if created:
-        print("aaaaa")
         notification = Notification.objects.create(
-            user=instance.post.user,
             post=instance.post,
             review=instance,
             title=messages.data['review_title'],
             status="review",
-            body=messages.data['review_title']
+            body=messages.data['review_message']
         )
-        send_message([instance.post.user], messages.data['review_title'], messages.data['review_title'])
+        notification.user.add(instance.post.user)
+        notification.save()
+        user = instance.user.token
+        if instance.is_client == False:
+            user = instance.post.user.token
+        send_message([user], messages.data['review_title'], messages.data['review_message'])

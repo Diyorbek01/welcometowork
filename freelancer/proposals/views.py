@@ -185,7 +185,15 @@ class ReviewViewset(viewsets.ModelViewSet):
     def get_post_reviews(self, request):
         post_id = request.GET.get("post_id", None)
 
-        reviews = Review.objects.filter(post_id=post_id)
+        reviews = Review.objects.filter(post_id=post_id, is_client=False)
+        serializer = ReviewGetSerializer(reviews, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    @action(methods=['get'], detail=False)
+    def get_worker_reviews(self, request):
+        user_id = request.user.id
+
+        reviews = Review.objects.filter(user_id=user_id, is_client=True)
         serializer = ReviewGetSerializer(reviews, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 

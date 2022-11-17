@@ -54,19 +54,6 @@ class Review(BaseModel):
     def __str__(self):
         return f"{self.user.get_full_name()} | {self.comment}"
 
-@receiver(post_save, sender=Review)
-def send_notification(sender, instance, created, **kwargs):
-    if created:
-        notification = Notification.objects.create(
-            post=instance.post,
-            review=instance,
-            title=messages.data['review_title'],
-            status="review",
-            body=messages.data['review_title']
-        )
-        notification.user.add(instance.post.user)
-        notification.save()
-        send_message([instance.post.user.token], messages.data['review_title'], messages.data['review_title'])
 
 
 class Invoice(BaseModel):
