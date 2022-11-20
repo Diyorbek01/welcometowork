@@ -1,4 +1,4 @@
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.utils.timezone import now
 from rest_framework import serializers
 
@@ -213,7 +213,7 @@ class PostClientGetSerializer(serializers.ModelSerializer):
 
     def get_is_reviewed(self, obj):
         user_id = self.context['user_id']
-        proposals = Review.objects.filter(post__user_id = user_id, post_id = obj.id)
+        proposals = Review.objects.filter(post__user_id=user_id, post_id=obj.id)
         if proposals.exists():
             return True
         return False
@@ -242,7 +242,8 @@ class PostClientGetSerializer(serializers.ModelSerializer):
         return number
 
     def get_proposals(self, obj):
-        proposals = Proposal.objects.filter(post_id=obj.id, admin_status='approved')
+        proposals = Proposal.objects.filter(Q(client_status='approved') | Q(client_status='pending'), post_id=obj.id,
+                                            admin_status='approved')
         serializer = ProposalForPostDetailsSerializer(proposals, many=True)
         return serializer.data
 
