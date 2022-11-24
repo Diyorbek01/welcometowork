@@ -259,8 +259,8 @@ class PostViewset(viewsets.ModelViewSet):
                 total_hours = first_timer.finish - first_timer.start
             elif last_timer:
                 total_hours = last_timer.finish - last_timer.start
-            user.total_earnings += total_price
-            post_user.total_spent += total_price
+            user.total_earnings += int(total_price)
+            post_user.total_spent += int(total_price)
             post_user.save()
             user.save()
             send_message([post.user.token], messages.data['post_title'], messages.data['finish_post'])
