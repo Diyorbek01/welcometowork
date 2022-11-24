@@ -254,11 +254,11 @@ class PostViewset(viewsets.ModelViewSet):
             last_timer = timers.last()
             total_hours = 0
             if first_timer and last_timer:
-                total_hours = last_timer - first_timer
+                total_hours = last_timer.finish - first_timer.start
             elif first_timer:
-                total_hours = first_timer
+                total_hours = first_timer.finish - first_timer.start
             elif last_timer:
-                total_hours = last_timer
+                total_hours = last_timer.finish - last_timer.start
             user.total_earnings += total_price
             post_user.total_spent += total_price
             post_user.save()
@@ -269,7 +269,11 @@ class PostViewset(viewsets.ModelViewSet):
                 title=messages.data['post_title'],
                 status='timer',
                 body={
-                    "total_time": total_hours,
+                    "total_time": {
+                        "days": total_hours.days,
+                        "hours": total_hours.seconds // 3600,
+                        "minutes": (total_hours.seconds // 60) % 60,
+                    },
                     "total_price": total_price,
                     "text": "Post yakunlandi"
                 }
