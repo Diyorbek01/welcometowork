@@ -3,6 +3,7 @@ from decouple import config
 data = {
 
     "post_title": "Post uchun xabar",
+    "finish_post": "Post yakunlandi",
     "confirm_post": "Sizning postingiz qabul qilindi",
     "archived_post": "Sizning postingiz arxivga o'tkazildi",
     "post_workers": "ishi joylandi",
@@ -16,6 +17,9 @@ data = {
     "bonus_message": f"Sizning hisobingizga {config('BONUS_PRICE')} so'm bonus sifatida taqdim etildi.",
 
     "review_title": "Izoh uchun xabar",
-    "review_message": "Siz haqingizda izoh qoldirildi"
+    "review_message": "Siz haqingizda izoh qoldirildi",
+
+    "timer_title": "Timer uchun xabar",
+    "timer_message": "Ishchi ishni yakunladi"
 
 }

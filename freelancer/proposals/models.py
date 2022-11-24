@@ -84,6 +84,7 @@ class Notification(BaseModel):
         ("bonus", "bonus"),
         ("archived", "archived"),
         ("review", "review"),
+        ("timer", "timer"),
     )
     user = models.ManyToManyField(User, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)

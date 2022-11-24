@@ -5,12 +5,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 
+import messages
 from client.post.models import Post, PostImage, Wishlist, Timer
 from client.post.serializers import PostImageSerializer, PostGetLessSerializer, \
     PostMenuSerializer, WishListSerializer, PostFinishedSerializer, PostFinishedClientSerializer, \
     PostClientGetSerializer, TimerSerializer, TimerGetSerializer, PostImagePostSerializer, PostSerializer
 from client.post.utils import sender
-from freelancer.proposals.models import Proposal, StatusChanges, Review, Invoice
+from client.user.models import User
+from freelancer.proposals.models import Proposal, StatusChanges, Review, Invoice, Notification
+from pusher import send_message
 
 
 class PostViewset(viewsets.ModelViewSet):
@@ -125,8 +128,22 @@ class PostViewset(viewsets.ModelViewSet):
                                            client_status="approved")
         if proposal.exists() and request.user.role == "freelancer":
             if status == "finished" and post.is_hourly == False:
-                request.user.total_earnings += post.maximum_project_budget
-                request.user.save()
+                user = proposal.last().user
+                post_user = post.user
+                user.total_earnings += proposal.last().price
+                post_user.total_spent += proposal.last().price
+                post_user.save()
+                user.save()
+
+                send_message([post.user.token], messages.data['post_title'], messages.data['finish_post'])
+                notification = Notification.objects.create(
+                    post=post,
+                    title=messages.data['post_title'],
+                    status='post',
+                    body=messages.data['finish_post']
+                )
+                notification.user.add(post.user)
+                notification.save()
             status_changes = StatusChanges.objects.create(
                 user=request.user,
                 from_status=post.status,
@@ -227,6 +244,38 @@ class PostViewset(viewsets.ModelViewSet):
         serializer = TimerSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            user = User.objects.get(id=data['user'])
+            post = Post.objects.get(id=data['post'])
+            total_price = data['total_price']
+            post_user = post.user
+
+            timers = Timer.objects.filter(post=data['post'], user=data['user'])
+            first_timer = timers.first()
+            last_timer = timers.last()
+            total_hours = 0
+            if first_timer and last_timer:
+                total_hours = last_timer - first_timer
+            elif first_timer:
+                total_hours = first_timer
+            elif last_timer:
+                total_hours = last_timer
+            user.total_earnings += total_price
+            post_user.total_spent += total_price
+            post_user.save()
+            user.save()
+            send_message([post.user.token], messages.data['post_title'], messages.data['finish_post'])
+            notification = Notification.objects.create(
+                post=post,
+                title=messages.data['post_title'],
+                status='timer',
+                body={
+                    "total_time": total_hours,
+                    "total_price": total_price,
+                    "text": "Post yakunlandi"
+                }
+            )
+            notification.user.add(post.user)
+            notification.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
