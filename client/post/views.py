@@ -268,15 +268,7 @@ class PostViewset(viewsets.ModelViewSet):
                 post=post,
                 title=messages.data['post_title'],
                 status='timer',
-                body={
-                    "total_time": {
-                        "days": total_hours.days,
-                        "hours": total_hours.seconds // 3600,
-                        "minutes": (total_hours.seconds // 60) % 60,
-                    },
-                    "total_price": total_price,
-                    "text": "Post yakunlandi"
-                }
+                body=f'Ishlagan vaqti: {total_hours.days}-{total_hours.seconds // 3600}-{(total_hours.seconds // 60) % 60}, Umumiy summasi: {total_price}'
             )
             notification.user.add(post.user)
             notification.save()
