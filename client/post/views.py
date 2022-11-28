@@ -1,9 +1,14 @@
+from datetime import timedelta
+
 from decouple import config
+from django.db.models import Q
+from django.utils.timezone import now
 # Create your views here.
 from rest_framework import viewsets, authentication, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.views import APIView
 
 import messages
 from client.post.models import Post, PostImage, Wishlist, Timer
@@ -374,3 +379,16 @@ class WishlistViewSet(viewsets.ModelViewSet):
             return Response("Post exists", status=202)
         else:
             return Response("Post doesn't exist", status=200)
+
+
+class CheckPost(APIView):
+    def get(self, request):
+        day = now() - timedelta(days=10)
+        proposal_posts = [proposal.post.id for proposal in Proposal.objects.all()]
+        posts = Post.objects.filter(Q(status="sent") | Q(status="approved"), id__in=proposal_posts, created_at__lte=day)
+        for i in posts:
+            i.status = "archived"
+            i.save()
+        return Response("Done")
+
+
