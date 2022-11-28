@@ -12,6 +12,6 @@ def start():
     cron2 = CheckPost()
 
     schedular.add_job(cron.get, "interval", days=1, kwargs={'request': request})
-    schedular.add_job(cron2.get, "interval", seconds=5, kwargs={'request': request})
+    schedular.add_job(cron2.get, "interval", days=1, kwargs={'request': request})
 
     schedular.start()
