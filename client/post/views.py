@@ -385,7 +385,7 @@ class CheckPost(APIView):
     def get(self, request):
         day = now() - timedelta(days=10)
         proposal_posts = [proposal.post.id for proposal in Proposal.objects.all()]
-        posts = Post.objects.filter(Q(status="sent") | Q(status="approved"), id__in=proposal_posts, created_at__lte=day)
+        posts = Post.objects.filter(~Q(id__in=proposal_posts), created_at__lte=day)
         for i in posts:
             i.status = "archived"
             i.save()
