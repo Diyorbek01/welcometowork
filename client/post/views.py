@@ -312,6 +312,8 @@ class PostViewset(viewsets.ModelViewSet):
             )
             notification.user.add(Post.objects.get(id=post).user)
             notification.save()
+            send_message([token], title=messages.data['post_title'], body=messages.data['cancelled_post'])
+
         elif proposal is not None:
             token = Proposal.objects.get(id=proposal).user.token
             notification = Notification.objects.create(
@@ -322,9 +324,10 @@ class PostViewset(viewsets.ModelViewSet):
             )
             notification.user.add(Proposal.objects.get(id=proposal).user)
             notification.save()
+            send_message([token], title=messages.data['post_title'], body=messages.data['cancelled_proposal'])
+
         else:
             return Response({"error": "Something went wrong"}, status=HTTP_400_BAD_REQUEST)
-        send_message([token], title=messages.data['post_title'], body=text)
         return Response({"message": "Created"}, status=HTTP_200_OK)
 
 

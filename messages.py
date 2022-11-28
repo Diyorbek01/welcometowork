@@ -4,12 +4,14 @@ data = {
 
     "post_title": "Post uchun xabar",
     "finish_post": "Post yakunlandi",
+    "cancelled_post": "Post tasdqilanmadi",
     "confirm_post": "Sizning postingiz qabul qilindi",
     "archived_post": "Sizning postingiz arxivga o'tkazildi",
     "post_workers": "ishi joylandi",
 
     "proposal_title": "Taklif uchun xabar",
     "create_proposal": "tomonidan taklif tushdi",
+    "cancelled_proposal": "Taklif tasdiqlanmadi",
     "archived_proposal": "Sizning taklifingiz arxivga o'tkazildi",
     "confirm_proposal": "Sizning taklifingiz qabul qilindi",
 
