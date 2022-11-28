@@ -264,11 +264,20 @@ class PostViewset(viewsets.ModelViewSet):
             post_user.save()
             user.save()
             send_message([post.user.token], messages.data['post_title'], messages.data['finish_post'])
+            days = total_hours.days
+            if len(days) == 1:
+                days = f'0{days}'
+            minutes = total_hours.seconds // 3600
+            if len(minutes) == 1:
+                minutes = f'0{minutes}'
+            seconds = (total_hours.seconds // 60) % 60
+            if len(seconds) == 1:
+                seconds = f'0{seconds}'
             notification = Notification.objects.create(
                 post=post,
                 title=messages.data['post_title'],
                 status='timer',
-                body=f'Ishlagan vaqti: {total_hours.days}-{total_hours.seconds // 3600}-{(total_hours.seconds // 60) % 60}, Umumiy summasi: {total_price}'
+                body=f'Ishlagan vaqti: {int(days)}-{minutes}-{seconds}, Umumiy summasi: {total_price}'
             )
             notification.user.add(post.user)
             notification.save()
@@ -280,6 +289,38 @@ class PostViewset(viewsets.ModelViewSet):
         timers = Timer.objects.all().order_by('created_at')
         serializer = TimerGetSerializer(timers, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def reason_for_cancellation(self, request):
+        user = request.user.id
+        post = request.data.get("post", None)
+        proposal = request.data.get("proposal", None)
+        text = request.data.get("text", None)
+        token = None
+        if post is not None:
+            token = Post.objects.get(id=post).user.token
+            notification = Notification.objects.create(
+                post_id=post,
+                title=messages.data['post_title'],
+                status='post',
+                body=text
+            )
+            notification.user.add(Post.objects.get(id=post).user)
+            notification.save()
+        elif proposal is not None:
+            token = Proposal.objects.get(id=proposal).user.token
+            notification = Notification.objects.create(
+                proposal_id=proposal,
+                title=messages.data['proposal_title'],
+                status='proposal',
+                body=text
+            )
+            notification.user.add(Proposal.objects.get(id=proposal).user)
+            notification.save()
+        else:
+            return Response({"error": "Something went wrong"}, status=HTTP_400_BAD_REQUEST)
+        send_message([token], title=messages.data['post_title'], body=text)
+        return Response({"message": "Created"}, status=HTTP_200_OK)
 
 
 class PostImageViewset(viewsets.ModelViewSet):

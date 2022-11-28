@@ -1,3 +1,10 @@
-from django.test import TestCase
+from functools import reduce
 
-# Create your tests here.
+
+def juft_sonlar(b):
+    for i in range(1,b):
+        if i%2==0:
+            yield i
+for i in juft_sonlar(30):
+
+    print(i)
